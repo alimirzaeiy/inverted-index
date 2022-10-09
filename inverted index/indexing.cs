@@ -112,53 +112,57 @@ namespace inverted_index
             }
             return input;
         }
-        
+
+        private void WordIndex(string str,int i)
+        {
+            List<string> words = new List<string>();
+            Index.Add(0);
+            Dictionary<int, List<int>> dictionary = new Dictionary<int, List<int>>();
+            List<int> list1 = new List<int>();
+            List<int> list = new List<int>();
+            Index[i] = 0;
+
+            for (int j = 0; Index[i] < str.LastIndexOf(" ");)
+            {
+                Index[i] = str.IndexOf(" ", Index[i]);
+                if (str[Index[i] + 1] == ' ')
+                {
+                    Index[i]++;
+                    continue;
+                }
+
+                list.Add(Index[i]);
+
+                Console.WriteLine("*******");
+                Console.WriteLine(Index[i]);
+
+                list1.Add(j);
+                if (j == 0) words.Add(str.Substring(0, list[j]));
+                else words.Add(str.Substring(list[j - 1] + 1, list[j] - list[j - 1] - 1));
+                if (address.ContainsKey(words[j]))
+                {
+
+                    if (address[words[j]].ContainsKey(i))
+                    {
+                        address[words[j]][i].Add(j);
+                    }
+                    else
+                    {
+                        address[words[j]].Add(i, new List<int> { { j } });
+                    }
+                }
+                else address.Add(words[j], new Dictionary<int, List<int>> { { i, new List<int>() { j } } });
+                Index[i]++;
+                j++;
+            }
+        }
         private void Indexer( List<string> input)
         {
             
-            List<string> words = new List<string>();
+            
             for (int i = 0; i < input.Count; i++)
             {
-                Index.Add(0);
-                Dictionary<int, List<int>> dictionary = new Dictionary<int, List<int>>();
-                List<int> list1 = new List<int>();
-                List<int> list = new List<int>();
-                Index[i] = 0;
-
-                for (int j = 0; Index[i] < input[i].LastIndexOf(" ");)
-                {
-                    Index[i] = input[i].IndexOf(" ", Index[i]);
-                    if (input[i][Index[i] + 1] == ' ')
-                    {
-                        Index[i]++;
-                        continue;
-                    }
-
-                    list.Add(Index[i]);
-
-                    Console.WriteLine("*******");
-                    Console.WriteLine(Index[i]);
-
-                    list1.Add(j);
-                    if (j == 0) words.Add(input[i].Substring(0, list[j]));
-                    else words.Add(input[i].Substring(list[j - 1] + 1, list[j] - list[j - 1] - 1));
-                    if (address.ContainsKey(words[j]))
-                    {
-
-                        if (address[words[j]].ContainsKey(i))
-                        {
-                            address[words[j]][i].Add(j);
-                        }
-                        else
-                        {
-                            address[words[j]].Add(i, new List<int> { { j } });
-                        }
-                    }
-                    else address.Add(words[j], new Dictionary<int, List<int>> { { i, new List<int>() { j } } });
-                    Index[i]++;
-                    j++;
-                }
-
+                WordIndex(input[i], i);
             }
 
         }
