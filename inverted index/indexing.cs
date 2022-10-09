@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using Microsoft.VisualBasic;
+using System.ComponentModel.DataAnnotations;
 
 namespace inverted_index
 {
@@ -159,13 +160,20 @@ namespace inverted_index
 }
 public class FindWords
 {
+    private bool isNextSpace(ref string input , int index)
+    {
+        return input[index + 1] == ' ';
+    }
+    private void addWord(string str , int j , ref List<string> words)
+    {
+        if (j == 0) words.Add(str.Substring(0, list[j]));
+        else words.Add(str.Substring(list[j - 1] + 1, list[j] - list[j - 1] - 1));
+    }
+    
     private List<string> words = new List<string>();
     private List<int> Index = new List<int>();
-    //private Index.Add(0);
-    private         Dictionary<int, List<int>> dictionary = new Dictionary<int, List<int>>();
-    private List<int> list1 = new List<int>();
+    private Dictionary<int, List<int>> dictionary = new Dictionary<int, List<int>>();
     private List<int> list = new List<int>();
-    //private Index[i] = 0;
     public Dictionary<string, Dictionary<int, List<int>>> WordIndexCalculator(string str , int i, Dictionary<string, Dictionary<int, List<int>>> address)
     {
         Index.Add(0);
@@ -173,20 +181,14 @@ public class FindWords
         for (int j = 0; Index[i] < str.LastIndexOf(" ");)
         {
             Index[i] = str.IndexOf(" ", Index[i]);
-            if (str[Index[i] + 1] == ' ')
+            if (isNextSpace(ref str, Index[i]))
             {
                 Index[i]++;
                 continue;
             }
 
             list.Add(Index[i]);
-
-            Console.WriteLine("*******");
-            Console.WriteLine(Index[i]);
-
-            list1.Add(j);
-            if (j == 0) words.Add(str.Substring(0, list[j]));
-            else words.Add(str.Substring(list[j - 1] + 1, list[j] - list[j - 1] - 1));
+            addWord(str, j,ref words);
             if (address.ContainsKey(words[j]))
             {
 
