@@ -113,56 +113,15 @@ namespace inverted_index
             return input;
         }
 
-        private void WordIndex(string str,int i)
-        {
-            List<string> words = new List<string>();
-            Index.Add(0);
-            Dictionary<int, List<int>> dictionary = new Dictionary<int, List<int>>();
-            List<int> list1 = new List<int>();
-            List<int> list = new List<int>();
-            Index[i] = 0;
-
-            for (int j = 0; Index[i] < str.LastIndexOf(" ");)
-            {
-                Index[i] = str.IndexOf(" ", Index[i]);
-                if (str[Index[i] + 1] == ' ')
-                {
-                    Index[i]++;
-                    continue;
-                }
-
-                list.Add(Index[i]);
-
-                Console.WriteLine("*******");
-                Console.WriteLine(Index[i]);
-
-                list1.Add(j);
-                if (j == 0) words.Add(str.Substring(0, list[j]));
-                else words.Add(str.Substring(list[j - 1] + 1, list[j] - list[j - 1] - 1));
-                if (address.ContainsKey(words[j]))
-                {
-
-                    if (address[words[j]].ContainsKey(i))
-                    {
-                        address[words[j]][i].Add(j);
-                    }
-                    else
-                    {
-                        address[words[j]].Add(i, new List<int> { { j } });
-                    }
-                }
-                else address.Add(words[j], new Dictionary<int, List<int>> { { i, new List<int>() { j } } });
-                Index[i]++;
-                j++;
-            }
-        }
         private void Indexer( List<string> input)
         {
-            
-            
+
+            FindWords findWords = new FindWords();
             for (int i = 0; i < input.Count; i++)
             {
-                WordIndex(input[i], i);
+                //WordIndex(input[i], i);
+                address = findWords.WordIndexCalculator(input[i], i, address);
+                //address = FindWords.WordIndexCalculator(input[i], i , address);
             }
 
         }
@@ -198,7 +157,55 @@ namespace inverted_index
         }
     }
 }
+public class FindWords
+{
+    private List<string> words = new List<string>();
+    private List<int> Index = new List<int>();
+    //private Index.Add(0);
+    private         Dictionary<int, List<int>> dictionary = new Dictionary<int, List<int>>();
+    private List<int> list1 = new List<int>();
+    private List<int> list = new List<int>();
+    //private Index[i] = 0;
+    public Dictionary<string, Dictionary<int, List<int>>> WordIndexCalculator(string str , int i, Dictionary<string, Dictionary<int, List<int>>> address)
+    {
+        Index.Add(0);
+        Index[i] = 0;
+        for (int j = 0; Index[i] < str.LastIndexOf(" ");)
+        {
+            Index[i] = str.IndexOf(" ", Index[i]);
+            if (str[Index[i] + 1] == ' ')
+            {
+                Index[i]++;
+                continue;
+            }
 
+            list.Add(Index[i]);
+
+            Console.WriteLine("*******");
+            Console.WriteLine(Index[i]);
+
+            list1.Add(j);
+            if (j == 0) words.Add(str.Substring(0, list[j]));
+            else words.Add(str.Substring(list[j - 1] + 1, list[j] - list[j - 1] - 1));
+            if (address.ContainsKey(words[j]))
+            {
+
+                if (address[words[j]].ContainsKey(i))
+                {
+                    address[words[j]][i].Add(j);
+                }
+                else
+                {
+                    address[words[j]].Add(i, new List<int> { { j } });
+                }
+            }
+            else address.Add(words[j], new Dictionary<int, List<int>> { { i, new List<int>() { j } } });
+            Index[i]++;
+            j++;
+        }
+        return address;
+    }
+}
 
 
 
