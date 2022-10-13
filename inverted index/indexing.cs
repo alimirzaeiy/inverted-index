@@ -11,29 +11,14 @@ using System.Threading.Tasks;
 using System.Net;
 using Microsoft.VisualBasic;
 using System.ComponentModel.DataAnnotations;
+using inverted_index;
 
 namespace inverted_index
 {
-    internal class indexing
+
+    public class Clean
     {
-        public string str1 { get; set; }
-        public string str2 { get; set; }
-
-        public List<int> Index { get; set; } = new List<int>();
-        //public List<int> indexList { get; set; } = new List<int>();
-        public Dictionary<int, List<int>> indexList { get; set; } = new Dictionary<int, List<int>>();
-        public Dictionary<int, string> dic { get; set; } = new Dictionary<int, string>();
-        public Dictionary<int, List<string>> wordIndex { get; set; } = new Dictionary<int, List<string>>();
-        public Dictionary<string, Dictionary<int, List<int>>> address { get; set; } = new Dictionary<string, Dictionary<int, List<int>>>();
-        public List<int> indexList1 { get; set; } = new List<int>();
-
-        public void Print(object input)
-        {
-            Console.WriteLine(Serialize(input));
-            Console.WriteLine("-------------------");
-        }
-        
-        private List<string> CleanString(List<string> input)
+        public List<string> String(List<string> input)
         {
             for (int i = 0; i < input.Count; i++)
             {
@@ -72,8 +57,7 @@ namespace inverted_index
             }
             return input;
         }
-        
-        private List<string> CleanWords(List<string> input)
+        public List<string> Words(List<string> input)
         {
             for (int i = 0; i < input.Count; i++)
             {
@@ -113,16 +97,34 @@ namespace inverted_index
             }
             return input;
         }
+    }
+    public class FileAndToken
+    {
+        public Dictionary<int, List<int>> TokenKeyValues { get; set; } = new Dictionary<int, List<int>>();
 
+    }
+    public class WordDictionary
+    {
+        public Dictionary<string,FileAndToken> dictionary { get; set; } = new Dictionary<string,FileAndToken>();
+    }
+    public static class Print
+    {
+        public static void it(object input)
+        {
+            Console.WriteLine(Serialize(input));
+            Console.WriteLine("-------------------");
+        }
+    }
+    internal class indexing
+    {
+        WordDictionary wordDictionary = new WordDictionary();
         private void Indexer( List<string> input)
         {
 
-            FindWords findWords = new FindWords();
+            WordIndexer findWords = new WordIndexer();
             for (int i = 0; i < input.Count; i++)
             {
-                //WordIndex(input[i], i);
-                address = findWords.WordIndexCalculator(input[i], i, address);
-                //address = FindWords.WordIndexCalculator(input[i], i , address);
+                wordDictionary = findWords.WordIndexCalculator(input[i], i, wordDictionary);
             }
 
         }
@@ -139,102 +141,109 @@ namespace inverted_index
 
         public void NewFile(List<string> strings)
         {
+            Clean clean = new Clean();
             // تمیز سازی حروف
-            strings = CleanString(strings);
+            strings = clean.String(strings);
            
             // تمیز سازی کلمات
-            strings = CleanWords(strings);
+            strings = clean.Words(strings);
 
             // ایندکس گذاری
             Indexer(strings);            
         }
 
-        public Dictionary<int,List<int>> Search1(string word)
+        public FileAndToken Search1(string word)
         {
             word = word.ToUpper();
             Console.WriteLine(word);
-            Print(address[word]);
-            return address[word]; 
+            Print.it(wordDictionary.dictionary[word]);
+            return wordDictionary.dictionary[word]; 
         }
     }
-}
-public class FindWords
-{
-    private bool isNextSpace(ref string input , int index)
+    public class Index
     {
-        return input[index + 1] == ' ';
+        public List<int> indexes { get; set; } = new List<int>();
     }
-    private void addWord(string str , int j , ref List<string> words)
+    public static class IsNext
     {
-        if (j == 0) words.Add(str.Substring(0, list[j]));
-        else words.Add(str.Substring(list[j - 1] + 1, list[j] - list[j - 1] - 1));
-    }
-    
-    private List<string> words = new List<string>();
-    private List<int> Index = new List<int>();
-    private Dictionary<int, List<int>> dictionary = new Dictionary<int, List<int>>();
-    private List<int> list = new List<int>();
-    public Dictionary<string, Dictionary<int, List<int>>> WordIndexCalculator(string str , int i, Dictionary<string, Dictionary<int, List<int>>> address)
-    {
-        Index.Add(0);
-        Index[i] = 0;
-        for (int j = 0; Index[i] < str.LastIndexOf(" ");)
+        public static bool Space(string input, int index)
         {
-            Index[i] = str.IndexOf(" ", Index[i]);
-            if (isNextSpace(ref str, Index[i]))
-            {
-                Index[i]++;
-                continue;
-            }
+            return input[index + 1] == ' ';
+        }
+    }
+    public class ListOfIndices
+    {
+        public List<int> indices { get; set; } = new List<int>();
+    }
+    public static class Add
+    {
+        public static List<string> Word(string str, int j, List<string> words, ListOfIndices listOfIndices)
+        {
+            if (j == 0) words.Add(str.Substring(0, listOfIndices.indices[j]));
+            else words.Add(str.Substring(listOfIndices.indices[j - 1] + 1, listOfIndices.indices[j] - listOfIndices.indices[j - 1] - 1));
+            return words;
+        }
+        public static ListOfIndices Address(string word, int i, int j, WordDictionary addressesByFileIdByToken, ListOfIndices listOfIndices)
+        {
 
-            list.Add(Index[i]);
-            addWord(str, j,ref words);
-            if (address.ContainsKey(words[j]))
+            if (addressesByFileIdByToken.dictionary.ContainsKey(word))
             {
-
-                if (address[words[j]].ContainsKey(i))
+                FileAndToken keyValuePairs = addressesByFileIdByToken.dictionary[word];
+                if (keyValuePairs.TokenKeyValues.ContainsKey(i))
                 {
-                    address[words[j]][i].Add(j);
+                    keyValuePairs.TokenKeyValues[i].Add(j);
                 }
                 else
                 {
-                    address[words[j]].Add(i, new List<int> { { j } });
+                    keyValuePairs.TokenKeyValues.Add(i, new List<int> { { j } });
                 }
             }
-            else address.Add(words[j], new Dictionary<int, List<int>> { { i, new List<int>() { j } } });
-            Index[i]++;
-            j++;
+            else
+            {
+                FileAndToken fileAndToken = new FileAndToken();
+                fileAndToken.TokenKeyValues.Add(i, new List<int> { { j } });
+                addressesByFileIdByToken.dictionary.Add(word, fileAndToken);
+            }
+            return listOfIndices;
         }
-        return address;
+    }
+    public class Words
+    {
+        public List<string> list { get; set; } = new List<string>();
+    }
+    public class WordIndexer
+    {
+        Words words = new Words();
+        ListOfIndices listOfIndices = new ListOfIndices();
+        Index index = new Index();
+        FindWord findWord = new FindWord();
+        public WordDictionary WordIndexCalculator(string str, int i, WordDictionary addressesByFileIdByToken)
+        {
+            index.indexes.Add(0);
+            index.indexes[i] = 0;
+            findWord.repeat(i, index.indexes, str, listOfIndices, words, addressesByFileIdByToken);
+            return addressesByFileIdByToken;
+        }
+    }
+    public class FindWord
+    {
+        public void repeat(int i, List<int> Index, string str, ListOfIndices listOfIndices, Words words, WordDictionary addressesByFileIdByToken)
+        {
+            for (int j = 0; Index[i] < str.LastIndexOf(" ");)
+            {
+                Index[i] = str.IndexOf(" ", Index[i]);
+                if (IsNext.Space(str, Index[i]))
+                {
+                    Index[i]++;
+                    continue;
+                }
+                listOfIndices.indices.Add(Index[i]);
+                words.list = Add.Word(str, j, words.list, listOfIndices);
+                listOfIndices = Add.Address(words.list[j], i, j, addressesByFileIdByToken, listOfIndices);
+                Index[i]++;
+                j++;
+            }
+        }
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-if (address.ContainsKey("salam"))
-{
-
-    if (address["salam"].ContainsKey(1))
-    {
-        address["salam"][1].Add(5);
-    }
-    else
-    {
-        address["salam"].Add(1, new List<int> { { 5 } });
-    }
-}
-else address.Add("salam", new Dictionary<int, List<int>> { { 1, new List<int>() { 5 } } });*/
